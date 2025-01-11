@@ -7,9 +7,11 @@ import {
   Dimensions,
   Easing,
   Platform,
+  SafeAreaView,
 } from "react-native";
+import { ScrollView } from "react-native";
 
-const { height } = Dimensions.get("window");
+const { height, width } = Dimensions.get("window");
 
 export default function ScannedLayout({
   data,
@@ -29,35 +31,42 @@ export default function ScannedLayout({
   }, []);
 
   // Debugging: Log the received props
-  console.log("ScannedLayout received data:", data);
+  // console.log("ScannedLayout received data:", data);
   console.log("ScannedLayout received analysis:", analysis);
 
   return (
-    <Animated.View
-      style={
-        Platform.OS === "android" ? { flex: 1 } : StyleSheet.absoluteFillObject,
-        [
-        styles.menu,
-        {
-          transform: [{ translateY: slideAnim }],
-        },
-      ]}
-    >
-      <Text style={styles.menuText}>QR Code Scanned!</Text>
-      <Text style={styles.menuText}>Data: {data}</Text>
-      <Text style={styles.menuText}>Analysis:</Text>
-      {analysis && (
-        <View>
-          {Object.entries(analysis.data.attributes.results).map(
-            ([key, value]) => (
-              <Text key={key} style={styles.menuText}>
-                {key}: {(value as { result: string }).result}
-              </Text>
-            )
-          )}
-        </View>
-      )}
-    </Animated.View>
+    <SafeAreaView style={StyleSheet.absoluteFillObject}>
+      <Animated.View
+        style={
+          (Platform.OS === "android"
+            ? { flex: 1 }
+            : StyleSheet.absoluteFillObject,
+          [
+            styles.menu,
+            {
+              transform: [{ translateY: slideAnim }],
+            },
+          ])
+        }
+      >
+        <Text style={styles.menuText}>Analysis:</Text>
+        {analysis.data.attributes.status === "queued" && (
+          <Text style={styles.menuText}>Queued</Text>
+        )}
+
+        {analysis.data.attributes.status === "completed" && (
+          <ScrollView style={styles.scrollView}>
+            {Object.entries(analysis.data.attributes.results).map(
+              ([key, value]) => (
+                <Text key={key} style={styles.menuText}>
+                  {key}: {(value as { result: string }).result}
+                </Text>
+              )
+            )}
+          </ScrollView>
+        )}
+      </Animated.View>
+    </SafeAreaView>
   );
 }
 
@@ -68,19 +77,23 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: (3 * height) / 2.8,
+    width: width,
     backgroundColor: "white",
     justifyContent: "center",
     alignItems: "center",
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 0.2,
     shadowRadius: 10,
     elevation: 5,
   },
+  scrollView: {
+    flex: 1,
+    width: width,
+  },
   menuText: {
-    fontSize: 18,
-    margin: 10,
+    fontFamily: "Lato",
+    fontSize: 13,
   },
 });
