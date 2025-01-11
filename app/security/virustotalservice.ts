@@ -24,7 +24,6 @@ export async function scanUrl(url: string): Promise<string> {
   try {
     const response = await axios.request(postOptions);
     const analysisId = response.data.data.id;
-    console.log("Scan ID:", analysisId);
     return analysisId;
   } catch (err) {
     console.error(err);
@@ -44,7 +43,11 @@ export async function getAnalysis(id: string): Promise<any> {
 
   try {
     const scanningresults = await axios.request(getOptions);
-    console.log("Scanning results:", scanningresults.data);
+    // const scanningStatus = scanningresults.data.data.attributes.status;
+    console.log(
+      "Scanning results from virustotalservice:",
+      scanningresults.data
+    );
     return scanningresults.data;
   } catch (err) {
     console.error(err);
