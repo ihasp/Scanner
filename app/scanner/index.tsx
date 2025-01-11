@@ -15,6 +15,7 @@ export default function Home() {
   const qrLock = useRef(false);
   const appState = useRef(AppState.currentState);
 
+
   useEffect(() => {
     const sub = AppState.addEventListener("change", (nextAppState) => {
       if (
