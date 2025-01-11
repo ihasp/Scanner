@@ -51,6 +51,7 @@
       "typedRoutes": true
     },
     "extra": {
+      "VIRUSTOTAL_API_KEY": "26f80c3bdb527cb4b6ec63a6f59e752520167edc80ef09fec99cd207ce153bad",
       "router": {
         "origin": false
       },
