@@ -1,3 +1,4 @@
+import React, { useRef, useEffect, useState } from "react";
 import {
   AppState,
   Linking,
@@ -6,15 +7,18 @@ import {
   StatusBar,
   StyleSheet,
 } from "react-native";
-import { useRef, useEffect } from "react";
 import { Stack } from "expo-router";
 import { CameraView } from "expo-camera";
 import { Overlay } from "./Overlay";
+import ScannedLayout from "../security/Scannedmenu";
+import { scanUrl, getAnalysis } from "../security/virustotalservice";
 
 export default function Home() {
   const qrLock = useRef(false);
   const appState = useRef(AppState.currentState);
-
+  const [showScannedLayout, setShowScannedLayout] = useState(false);
+  const [scannedData, setScannedData] = useState<string | null>(null);
+  const [analysisData, setAnalysisData] = useState<string | any>(null);
 
   useEffect(() => {
     const sub = AppState.addEventListener("change", (nextAppState) => {
@@ -44,16 +48,25 @@ export default function Home() {
       <CameraView
         style={StyleSheet.absoluteFillObject}
         facing="back"
-        onBarcodeScanned={({ data }) => {
+        onBarcodeScanned={async ({ data }) => {
+          setScannedData(data);
           if (data && !qrLock.current) {
             qrLock.current = true;
-            setTimeout(async () => {
-              Linking.openURL(data);
-            }, 500);
+            try {
+              const analysisId = await scanUrl(data);
+              const analysis = await getAnalysis(analysisId);
+              setAnalysisData(analysis);
+              setShowScannedLayout(true);
+            } catch (e) {
+              console.error("Error at scanning or getting analysis", e);
+            }
           }
         }}
       />
       <Overlay />
+      {showScannedLayout && scannedData && (
+        <ScannedLayout data={scannedData} analysis={analysisData} />
+      )}
     </SafeAreaView>
   );
 }
