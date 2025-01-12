@@ -44,10 +44,10 @@ export async function getAnalysis(id: string): Promise<any> {
   try {
     const scanningresults = await axios.request(getOptions);
     // const scanningStatus = scanningresults.data.data.attributes.status;
-    console.log(
-      "Scanning results from virustotalservice:",
-      scanningresults.data
-    );
+    // console.log(
+    //   "Scanning results from virustotalservice:",
+    //   scanningresults.data
+    // );
     return scanningresults.data;
   } catch (err) {
     console.error(err);

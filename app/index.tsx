@@ -30,7 +30,7 @@ export default function HomeScreen() {
                 : styles.buttonRequestPermissions
             }
           >
-            Request Permissions
+            Zezwól na uprawnienia
           </Text>
         </Pressable>
         <Pressable>
@@ -69,7 +69,6 @@ const styles = StyleSheet.create({
     visibility: "hidden",
     opacity: 0,
   },
-
   buttonStyle: {
     height: 60,
     marginTop: 12,
