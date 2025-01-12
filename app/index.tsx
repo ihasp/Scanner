@@ -1,7 +1,7 @@
 import { StyleSheet, View, Text, Pressable } from "react-native";
 import { useCameraPermissions } from "expo-camera";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Link, Stack } from "expo-router";
+import { Link, Redirect, Stack } from "expo-router";
 
 export default function HomeScreen() {
   const [permission, requestPermission] = useCameraPermissions();
@@ -33,23 +33,7 @@ export default function HomeScreen() {
             Zezwól na uprawnienia
           </Text>
         </Pressable>
-        <Pressable>
-          <Link href={"/scanner"} asChild>
-            <Pressable
-              disabled={!isPermissionGranted}
-              style={styles.buttonStyle}
-            >
-              <Text
-                style={[
-                  styles.buttonText,
-                  { opacity: !isPermissionGranted ? 0.5 : 1 },
-                ]}
-              >
-                Skanuj
-              </Text>
-            </Pressable>
-          </Link>
-        </Pressable>
+        {isPermissionGranted && <Redirect href="/scanner" />}
       </View>
     </SafeAreaView>
   );
