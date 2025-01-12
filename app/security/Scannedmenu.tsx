@@ -14,6 +14,7 @@ import {
   ScrollView,
 } from "react-native";
 import { Link } from "expo-router";
+import GlowOverlay from "./GlowOverlay";
 
 const { height, width } = Dimensions.get("window");
 
@@ -29,8 +30,15 @@ export default function ScannedLayout({
   onRetry: () => void;
 }) {
   const slideAnim = useRef(new Animated.Value(height)).current;
+  const scrollViewRef = useRef<ScrollView>(null);
   const [showActivityIndicator, setShowActivityIndicator] = useState(true);
+  const [showGlow, setShowGlow] = useState(false);
+  const [isSafe, setIsSafe] = useState(true);
 
+  //debug
+  console.log("ScannedLayout received analysis:", analysis);
+
+  //animacja wejścia menu
   useEffect(() => {
     Animated.timing(slideAnim, {
       toValue: height / 600,
@@ -40,19 +48,7 @@ export default function ScannedLayout({
     }).start();
   }, []);
 
-  useEffect(() => {
-    const interval = setInterval(async () => {
-      if (analysis.data.attributes.status !== "completed") {
-        await onRetry();
-      } else {
-        clearInterval(interval);
-        setShowActivityIndicator(false);
-      }
-    }, 2000);
-
-    return () => clearInterval(interval);
-  }, [onRetry, analysis.data.attributes.status]);
-
+  //animacja wyjścia menu
   const handleClose = () => {
     Animated.timing(slideAnim, {
       toValue: height,
@@ -64,10 +60,75 @@ export default function ScannedLayout({
     });
   };
 
-  console.log("ScannedLayout received analysis:", analysis);
+  //scroll na dół strony
+  const handleScrollToEnd = () => {
+    scrollViewRef.current?.scrollToEnd({ animated: true });
+  };
+
+  //Style wyników
+  const getResultText = (result: string) => {
+    switch (result) {
+      case "clean":
+        return { text: "Brak zagrożenia", color: "green", priority: 4 };
+      case "unrated":
+        return { text: "", color: "", priority: 5 };
+      case "malicious":
+        return { text: "Niebezpieczny link", color: "red", priority: 1 };
+      case "phishing":
+        return { text: "Phishing", color: "orange", priority: 2 };
+      case "suspicious":
+        return { text: "Podejrzany link", color: "yellow", priority: 3 };
+      default:
+        return { text: result, color: "black", priority: 6 };
+    }
+  };
+
+  useEffect(() => {
+    //Jeżeli status od api !== completed, wykonuj interwał
+    const interval = setInterval(async () => {
+      if (analysis.data.attributes.status !== "completed") {
+        await onRetry();
+      } else {
+        clearInterval(interval);
+        //Ekran ładowania
+        setShowActivityIndicator(false);
+        //Podświetlenie
+        const hasDangerousResults = sortedResults.some(
+          ({ text }) =>
+            text === "Niebezpieczny link" ||
+            text === "Phishing" ||
+            text === "Podejrzany link"
+        );
+        setIsSafe(!hasDangerousResults);
+        setShowGlow(true);
+        setTimeout(() => setShowGlow(false), 2000);
+      }
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, [onRetry, analysis.data.attributes.status]);
+
+  //sortowanie wyników skanowania + style
+  const sortedResults = Object.entries(analysis.data.attributes.results)
+    .map(([key, value]) => {
+      const { text, color, priority } = getResultText(
+        (value as { result: string }).result
+      );
+      return { key, text, color, priority };
+    })
+    .filter(({ text }) => text !== "")
+    .sort((a, b) => a.priority - b.priority);
+
+  const hasDangerousResults = sortedResults.some(
+    ({ text }) =>
+      text === "Niebezpieczny link" ||
+      text === "Phishing" ||
+      text === "Podejrzany link"
+  );
 
   return (
     <SafeAreaView style={[StyleSheet.absoluteFillObject, { flex: 1 }]}>
+        <GlowOverlay isSafe={isSafe} visible={showGlow} />
       <Animated.View
         style={[
           { transform: [{ translateY: slideAnim }] },
@@ -78,13 +139,14 @@ export default function ScannedLayout({
         <Text style={styles.titleMenuText}>Wynik skanu:</Text>
         <Text style={styles.titleMenuTextScanned}>{data}</Text>
 
+        <Pressable style={styles.scrollButtonStyle} onPress={handleScrollToEnd}>
+          <Text style={styles.ButtonText}>\/</Text>
+        </Pressable>
         {analysis.data.attributes.status === "queued" && (
           <View>
             {showActivityIndicator ? (
               <>
-                <Text style={styles.queuedText}>
-                  Czekam na odpowiedź serwera
-                </Text>
+                <Text style={styles.queuedText}>Skanowanie</Text>
                 <ActivityIndicator
                   size={"large"}
                   style={[
@@ -101,29 +163,29 @@ export default function ScannedLayout({
 
         {analysis.data.attributes.status === "completed" && (
           <ScrollView
+            ref={scrollViewRef}
             style={styles.scanResultsBlock}
             contentContainerStyle={{ flexGrow: 1 }}
           >
             <View style={{ flexGrow: 1 }}>
-              {Object.entries(analysis.data.attributes.results).map(
-                ([key, value]) => (
-                  <View key={key}>
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        flexWrap: "wrap",
-                      }}
-                    >
-                      <Text style={styles.keyText}>{key}: </Text>
-                      <Text style={styles.valueText}>
-                        {(value as { result: string }).result}
-                      </Text>
-                    </View>
+              {sortedResults.map(({ key, text, color }) => (
+                <View key={key}>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    <Text style={styles.keyText}>{key}: </Text>
+                    <Text style={[styles.valueText, { color }]}>{text}</Text>
                   </View>
-                )
-              )}
+                </View>
+              ))}
               <Pressable
-                style={styles.openURLButtonStyle}
+                style={[
+                  styles.openURLButtonStyle,
+                  hasDangerousResults && { backgroundColor: "#ff4336" },
+                ]}
                 onPress={() => {
                   Linking.openURL(data);
                 }}
@@ -158,7 +220,6 @@ const styles = StyleSheet.create({
   },
   scanResultsBlock: {
     width: width,
-    marginTop: 5,
     flexGrow: 1,
   },
   titleMenuText: {
@@ -173,27 +234,27 @@ const styles = StyleSheet.create({
     fontWeight: "normal",
     fontSize: 13,
     textDecorationLine: "underline",
-    marginBottom: 10,
+    marginBottom: 5,
   },
   keyText: {
     fontFamily: "Lato",
     fontSize: 13,
-    fontWeight: "normal",
-    marginLeft: 25,
-    color: "#2cdb38",
+    fontWeight: "bold",
+    marginLeft: 32,
+    color: "black",
     flexGrow: 1,
   },
   valueText: {
     fontFamily: "Lato",
     fontSize: 13,
     fontWeight: "bold",
-    marginRight: 25,
+    marginRight: 32,
   },
   queuedText: {
     fontFamily: "Lato",
     fontSize: 45,
     fontWeight: "bold",
-    color: "orange",
+    color: "#3675ff",
     alignSelf: "center",
     marginTop: 20,
   },
@@ -201,8 +262,7 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     height: 60,
     width: width / 1.2,
-    marginTop: 10,
-    marginBottom: 5,
+    marginTop: 12,
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 12,
@@ -215,18 +275,37 @@ const styles = StyleSheet.create({
     lineHeight: 21,
     fontFamily: "Lato",
     fontWeight: "bold",
+    outlineColor: "black",
+    color: "white",
+    shadowColor: "black",
+    shadowOffset: { width: 0, height: 1 },
   },
   closeButtonStyle: {
     alignSelf: "center",
     height: 60,
     width: width / 1.2,
     marginTop: 12,
-    marginBottom: 5,
+    marginBottom: 20,
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 12,
     paddingHorizontal: 32,
     borderRadius: 12,
-    backgroundColor: "skyblue",
+    backgroundColor: "#3675ff",
+  },
+  scrollButtonStyle: {
+    position: "absolute",
+    bottom: 0,
+    right: 0,
+    marginBottom: 25,
+    marginRight: 10,
+    zIndex: 1,
+    height: 50,
+    width: 50,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 100,
+    backgroundColor: "black",
+    opacity: 0.6,
   },
 });
