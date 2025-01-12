@@ -19,6 +19,7 @@ export default function Home() {
   const [showScannedLayout, setShowScannedLayout] = useState(false);
   const [scannedData, setScannedData] = useState<string | null>(null);
   const [analysisData, setAnalysisData] = useState<string | any>(null);
+  const [isRetrying, setIsRetrying] = useState(false);
 
   useEffect(() => {
     const sub = AppState.addEventListener("change", (nextAppState) => {
@@ -41,10 +42,12 @@ export default function Home() {
     setScannedData(null);
     setAnalysisData(null);
     qrLock.current = false;
+    setIsRetrying(false);
   };
 
   const handleRetry = async () => {
-    if (scannedData) {
+    if (scannedData && !isRetrying) {
+      setIsRetrying(true);
       try {
         const analysisId = await scanUrl(scannedData);
         const analysis = await getAnalysis(analysisId);
@@ -52,6 +55,8 @@ export default function Home() {
         setShowScannedLayout(true);
       } catch (e) {
         console.error("Error at scanning or getting analysis", e);
+      } finally {
+        setIsRetrying(false);
       }
     }
   };

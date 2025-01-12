@@ -38,14 +38,20 @@ export default function ScannedLayout({
       easing: Easing.out(Easing.exp),
       useNativeDriver: true,
     }).start();
+  }, []);
 
-    const timer = setTimeout(() => {
-      setShowActivityIndicator(false);
-      onRetry();
-    }, 5000);
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      if (analysis.data.attributes.status !== "completed") {
+        await onRetry();
+      } else {
+        clearInterval(interval);
+        setShowActivityIndicator(false);
+      }
+    }, 2000);
 
-    return () => clearTimeout(timer);
-  }, [onRetry]);
+    return () => clearInterval(interval);
+  }, [onRetry, analysis.data.attributes.status]);
 
   const handleClose = () => {
     Animated.timing(slideAnim, {
@@ -173,7 +179,7 @@ const styles = StyleSheet.create({
     fontFamily: "Lato",
     fontSize: 13,
     fontWeight: "normal",
-    marginLeft: 10,
+    marginLeft: 25,
     color: "#2cdb38",
     flexGrow: 1,
   },
@@ -181,7 +187,7 @@ const styles = StyleSheet.create({
     fontFamily: "Lato",
     fontSize: 13,
     fontWeight: "bold",
-    marginRight: 10,
+    marginRight: 25,
   },
   queuedText: {
     fontFamily: "Lato",
