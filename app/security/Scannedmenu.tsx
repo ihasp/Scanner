@@ -50,13 +50,16 @@ export default function ScannedLayout({
 
   //animacja wyjścia menu
   const handleClose = () => {
-    Animated.timing(slideAnim, {
-      toValue: height,
-      duration: 400,
-      easing: Easing.in(Easing.exp),
-      useNativeDriver: true,
-    }).start(() => {
-      onClose();
+    return new Promise((resolve) => {
+      Animated.timing(slideAnim, {
+        toValue: height,
+        duration: 400,
+        easing: Easing.in(Easing.exp),
+        useNativeDriver: true,
+      }).start(() => {
+        onClose();
+        resolve(true);
+      });
     });
   };
 
@@ -195,7 +198,9 @@ export default function ScannedLayout({
               <Link href="/scanner" asChild>
                 <Pressable
                   style={styles.closeButtonStyle}
-                  onPress={handleClose}
+                  onPress={async () => {
+                    await handleClose();
+                  }}
                 >
                   <Text style={styles.ButtonText}>Skanuj ponownie</Text>
                 </Pressable>
