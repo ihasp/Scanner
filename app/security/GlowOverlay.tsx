@@ -59,7 +59,7 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     justifyContent: "center",
     alignItems: "center",
-    zIndex: 300,
+    zIndex: 90,
   },
 });
 
