@@ -29,7 +29,7 @@ export default function ScannedLayout({
   onClose: () => void;
   onRetry: () => void;
 }) {
-  const slideAnim = useRef(new Animated.Value(height)).current;
+  const slideAnim = useRef(new Animated.Value(1)).current;
   const scrollViewRef = useRef<ScrollView>(null);
   const [showActivityIndicator, setShowActivityIndicator] = useState(true);
   const [showGlow, setShowGlow] = useState(false);
@@ -38,22 +38,26 @@ export default function ScannedLayout({
   //debug
   console.log("ScannedLayout received analysis:", analysis);
 
-  //animacja wejścia menu
+  // Entry animation
   useEffect(() => {
     Animated.timing(slideAnim, {
-      toValue: height / 600,
+      toValue: 0,
       duration: 400,
-      easing: Easing.out(Easing.exp),
+      easing: Easing.in(Easing.exp),
       useNativeDriver: true,
     }).start();
+
+    return () => {
+      slideAnim.setValue(1);
+    };
   }, []);
 
-  //animacja wyjścia menu
+  // Exit animation
   const handleClose = () => {
     return new Promise((resolve) => {
       Animated.timing(slideAnim, {
-        toValue: height,
-        duration: 400,
+        toValue: 1,
+        duration: 500,
         easing: Easing.in(Easing.exp),
         useNativeDriver: true,
       }).start(() => {
@@ -134,7 +138,16 @@ export default function ScannedLayout({
       <GlowOverlay isSafe={isSafe} visible={showGlow} />
       <Animated.View
         style={[
-          { transform: [{ translateY: slideAnim }] },
+          {
+            transform: [
+              {
+                translateY: slideAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [0, height],
+                }),
+              },
+            ],
+          },
           StyleSheet.absoluteFill,
           styles.menu,
         ]}
