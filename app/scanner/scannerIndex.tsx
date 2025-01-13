@@ -9,9 +9,10 @@ import {
 } from "react-native";
 import { Stack } from "expo-router";
 import { CameraView } from "expo-camera";
-import { Overlay } from "./Overlay";
+import Overlay  from "./Overlay";
 import ScannedLayout from "../security/Scannedmenu";
-import { scanUrl, getAnalysis } from "../security/virustotalservice";
+import scanUrl from "../security/virustotalpost";
+import getAnalysis from "../security/virustotalget";
 
 export default function Home() {
   const qrLock = useRef(false);
@@ -41,8 +42,8 @@ export default function Home() {
     setShowScannedLayout(false);
     setScannedData(null);
     setAnalysisData(null);
-    qrLock.current = false;
     setIsRetrying(false);
+    qrLock.current = false;
   };
 
   const handleRetry = async () => {

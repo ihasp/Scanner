@@ -1,4 +1,4 @@
-import { StyleSheet, View, Text, Pressable } from "react-native";
+import { StyleSheet, View, Text, Pressable, Linking } from "react-native";
 import { useCameraPermissions } from "expo-camera";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Link, Redirect, Stack } from "expo-router";
@@ -11,7 +11,6 @@ export default function HomeScreen() {
       <Stack.Screen
         options={{ title: "Overview", headerShown: false }}
       ></Stack.Screen>
-      <Text style={styles.titleContainer}>QR Code Scanner</Text>
       <View
         style={{ gap: 20, marginTop: 500, marginLeft: 40, marginRight: 40 }}
       >
@@ -33,7 +32,14 @@ export default function HomeScreen() {
             Zezwól na uprawnienia
           </Text>
         </Pressable>
-        {isPermissionGranted && <Redirect href="/scanner" />}
+
+        {isPermissionGranted && <Redirect href="/scanner/scannerIndex" />}
+
+        <Link href="/scanner/scannerIndex" asChild>
+          <Pressable style={styles.buttonStyle}>
+            <Text>Skanuj</Text>
+          </Pressable>
+        </Link>
       </View>
     </SafeAreaView>
   );

@@ -1,4 +1,3 @@
-import { scale } from "@shopify/react-native-skia";
 import React, { useEffect, useRef, useState } from "react";
 import {
   View,
@@ -15,21 +14,36 @@ import {
 } from "react-native";
 import { Link } from "expo-router";
 import GlowOverlay from "./GlowOverlay";
-
+import {} from "react-native-reanimated";
 const { height, width } = Dimensions.get("window");
+
+interface Analysis {
+  data: {
+    attributes: {
+      status: "queued" | "completed";
+      results: {
+        [key: string]: {
+          result: "clean" | "unrated" | "malicious" | "phishing" | "suspicious";
+        };
+      };
+    };
+  };
+}
+
+interface ScannedLayoutProps {
+  data: string;
+  analysis: Analysis;
+  onClose: () => void;
+  onRetry: () => void;
+}
 
 export default function ScannedLayout({
   data,
   analysis,
   onClose,
   onRetry,
-}: {
-  data: string;
-  analysis: any;
-  onClose: () => void;
-  onRetry: () => void;
-}) {
-  const slideAnim = useRef(new Animated.Value(1)).current;
+}: ScannedLayoutProps) {
+  const slideAnim = useRef(new Animated.Value(0)).current;
   const scrollViewRef = useRef<ScrollView>(null);
   const [showActivityIndicator, setShowActivityIndicator] = useState(true);
   const [showGlow, setShowGlow] = useState(false);
@@ -38,33 +52,36 @@ export default function ScannedLayout({
   //debug
   console.log("ScannedLayout received analysis:", analysis);
 
-  // Entry animation
+  // Animacja otwarcia menu
   useEffect(() => {
-    Animated.timing(slideAnim, {
+    const animation = Animated.timing(slideAnim, {
+      toValue: 1,
+      duration: 400,
+      easing: Easing.out(Easing.exp),
+      useNativeDriver: true,
+    });
+    animation.start();
+    return () => {
+      animation.stop();
+      slideAnim.setValue(0);
+    };
+  }, [slideAnim]);
+
+  // Animacja zamknięcia menu
+  const handleClose = () => {
+    const animClose = Animated.timing(slideAnim, {
       toValue: 0,
       duration: 400,
       easing: Easing.in(Easing.exp),
       useNativeDriver: true,
-    }).start();
-
-    return () => {
-      slideAnim.setValue(1);
-    };
-  }, []);
-
-  // Exit animation
-  const handleClose = () => {
-    return new Promise((resolve) => {
-      Animated.timing(slideAnim, {
-        toValue: 1,
-        duration: 500,
-        easing: Easing.in(Easing.exp),
-        useNativeDriver: true,
-      }).start(() => {
-        onClose();
-        resolve(true);
-      });
     });
+    animClose.start(() => {
+      onClose();
+      animClose.stop();
+    });
+    setTimeout(() => {
+      animClose.stop();
+    }, 500);
   };
 
   //scroll na dół strony
@@ -143,7 +160,7 @@ export default function ScannedLayout({
               {
                 translateY: slideAnim.interpolate({
                   inputRange: [0, 1],
-                  outputRange: [0, height],
+                  outputRange: [height, 0],
                 }),
               },
             ],
@@ -208,12 +225,10 @@ export default function ScannedLayout({
               >
                 <Text style={styles.ButtonText}>Przejdź do strony</Text>
               </Pressable>
-              <Link href="/scanner" asChild>
+              <Link href="/scanner/scannerIndex" asChild>
                 <Pressable
                   style={styles.closeButtonStyle}
-                  onPress={async () => {
-                    await handleClose();
-                  }}
+                  onPress={handleClose}
                 >
                   <Text style={styles.ButtonText}>Skanuj ponownie</Text>
                 </Pressable>
@@ -242,7 +257,6 @@ const styles = StyleSheet.create({
   },
   titleMenuText: {
     alignSelf: "center",
-    fontFamily: "Lato",
     fontWeight: "bold",
     fontSize: 20,
     marginTop: 10,
@@ -255,7 +269,6 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   keyText: {
-    fontFamily: "Lato",
     fontSize: 13,
     fontWeight: "bold",
     marginLeft: 32,
@@ -263,13 +276,11 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   valueText: {
-    fontFamily: "Lato",
     fontSize: 13,
     fontWeight: "bold",
     marginRight: 32,
   },
   queuedText: {
-    fontFamily: "Lato",
     fontSize: 45,
     fontWeight: "bold",
     color: "#3675ff",
@@ -291,7 +302,6 @@ const styles = StyleSheet.create({
   ButtonText: {
     fontSize: 16,
     lineHeight: 21,
-    fontFamily: "Lato",
     fontWeight: "bold",
     outlineColor: "black",
     color: "white",
