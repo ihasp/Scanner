@@ -103,7 +103,7 @@ export default function ScannedLayout({
         setShowGlow(true);
         setTimeout(() => setShowGlow(false), 2000);
       }
-    }, 2000);
+    }, 1000);
 
     return () => clearInterval(interval);
   }, [onRetry, analysis.data.attributes.status]);
@@ -128,7 +128,7 @@ export default function ScannedLayout({
 
   return (
     <SafeAreaView style={[StyleSheet.absoluteFillObject, { flex: 1 }]}>
-        <GlowOverlay isSafe={isSafe} visible={showGlow} />
+      <GlowOverlay isSafe={isSafe} visible={showGlow} />
       <Animated.View
         style={[
           { transform: [{ translateY: slideAnim }] },
@@ -299,7 +299,7 @@ const styles = StyleSheet.create({
     right: 0,
     marginBottom: 25,
     marginRight: 10,
-    zIndex: 1,
+    zIndex: 300,
     height: 50,
     width: 50,
     alignItems: "center",
