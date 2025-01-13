@@ -4,7 +4,6 @@ import { Dimensions, Platform, StyleSheet } from "react-native";
 const { width, height } = Dimensions.get("window");
 const innerDimension = 300;
 
-// Validate shape definitions
 const outer = rrect(rect(0, 0, width, height + 80), 0, 5);
 const inner = rrect(
   rect(
@@ -17,7 +16,7 @@ const inner = rrect(
   50
 );
 
-export const Overlay = () => {
+const Overlay = () => {
   return (
     <Canvas
       style={
@@ -28,3 +27,5 @@ export const Overlay = () => {
     </Canvas>
   );
 };
+
+export default Overlay;
