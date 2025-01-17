@@ -17,15 +17,12 @@ const GlowOverlay: React.FC<GlowOverlayProps> = ({
     () => (isSafe ? "rgba(0, 255, 0, 0.5)" : "rgba(255, 0, 0, 0.5)"),
     [isSafe]
   );
-
   const animatedStyle = useMemo(
     () => [styles.overlay, { backgroundColor, opacity }],
     [backgroundColor, opacity]
   );
-
   useEffect(() => {
     let animationSequence: Animated.CompositeAnimation;
-
     if (visible) {
       animationSequence = Animated.sequence([
         Animated.timing(opacity, {
@@ -39,10 +36,8 @@ const GlowOverlay: React.FC<GlowOverlayProps> = ({
           useNativeDriver: true,
         }),
       ]);
-
       animationSequence.start();
     }
-
     return () => {
       animationSequence?.stop();
       opacity.setValue(0);

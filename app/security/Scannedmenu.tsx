@@ -12,9 +12,8 @@ import {
   Linking,
   ScrollView,
 } from "react-native";
-import { Link } from "expo-router";
+import { Link, Stack } from "expo-router";
 import GlowOverlay from "./GlowOverlay";
-import {} from "react-native-reanimated";
 const { height, width } = Dimensions.get("window");
 
 interface Analysis {
@@ -129,6 +128,9 @@ export default function ScannedLayout({
       }
     }, 1000);
 
+
+    
+
     return () => clearInterval(interval);
   }, [onRetry, analysis.data.attributes.status]);
 
@@ -152,6 +154,12 @@ export default function ScannedLayout({
 
   return (
     <SafeAreaView style={[StyleSheet.absoluteFillObject, { flex: 1 }]}>
+      <Stack.Screen
+        options={{
+          title: "menu",
+          headerShown: false,
+        }}
+      />
       <GlowOverlay isSafe={isSafe} visible={showGlow} />
       <Animated.View
         style={[
@@ -171,7 +179,6 @@ export default function ScannedLayout({
       >
         <Text style={styles.titleMenuText}>Wynik skanu:</Text>
         <Text style={styles.titleMenuTextScanned}>{data}</Text>
-
         <Pressable style={styles.scrollButtonStyle} onPress={handleScrollToEnd}>
           <Text style={styles.ButtonText}>\/</Text>
         </Pressable>
@@ -225,7 +232,7 @@ export default function ScannedLayout({
               >
                 <Text style={styles.ButtonText}>Przejdź do strony</Text>
               </Pressable>
-              <Link href="/scanner/scannerIndex" asChild>
+              <Link href="/scanner" asChild>
                 <Pressable
                   style={styles.closeButtonStyle}
                   onPress={handleClose}

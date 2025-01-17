@@ -33,9 +33,9 @@ export default function HomeScreen() {
           </Text>
         </Pressable>
 
-        {isPermissionGranted && <Redirect href="/scanner/scannerIndex" />}
+        {isPermissionGranted && <Redirect href="/scanner" />}
 
-        <Link href="/scanner/scannerIndex" asChild>
+        <Link href="/scanner" asChild>
           <Pressable style={styles.buttonStyle}>
             <Text>Skanuj</Text>
           </Pressable>

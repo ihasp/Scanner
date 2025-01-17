@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState, useCallback } from "react";
 import {
   AppState,
   Linking,
@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { Stack } from "expo-router";
 import { CameraView } from "expo-camera";
-import Overlay  from "./Overlay";
+import Overlay from "./Overlay";
 import ScannedLayout from "../security/Scannedmenu";
 import scanUrl from "../security/virustotalpost";
 import getAnalysis from "../security/virustotalget";
@@ -32,11 +32,12 @@ export default function Home() {
       }
       appState.current = nextAppState;
     });
-
     return () => {
       sub.remove();
     };
   }, []);
+
+
 
   const handleClose = () => {
     setShowScannedLayout(false);
@@ -61,15 +62,10 @@ export default function Home() {
       }
     }
   };
-
+  1;
   return (
     <SafeAreaView style={StyleSheet.absoluteFillObject}>
-      <Stack.Screen
-        options={{
-          title: "Overview",
-          headerShown: false,
-        }}
-      />
+      <Stack.Screen options={{ title: "Overview", headerShown: false }} />
       {Platform.OS === "android" ? <StatusBar translucent /> : null}
       <CameraView
         style={StyleSheet.absoluteFillObject}
