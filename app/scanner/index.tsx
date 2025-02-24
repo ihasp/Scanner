@@ -19,7 +19,7 @@ export default function Home() {
   const qrLock = useRef(false);
   const appState = useRef(AppState.currentState);
   const [showScannedLayout, setShowScannedLayout] = useState(false);
-  const [scannedData, setScannedData] = useState<string | null>(null);
+  const [scannedData, setScannedData] = useState<string | any>(null);
   const [analysisData, setAnalysisData] = useState<string | any>(null);
   const [isRetrying, setIsRetrying] = useState(false);
 
