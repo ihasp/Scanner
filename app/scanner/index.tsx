@@ -9,11 +9,11 @@ import {
 } from "react-native";
 import { Stack } from "expo-router";
 import { CameraView } from "expo-camera";
+import { SplashScreen } from "expo-router";
 import Overlay from "./Overlay";
 import ScannedLayout from "../security";
 import scanUrl from "../security/vtPost";
 import getAnalysis from "../security/vtGet";
-import { SplashScreen } from "expo-router";
 
 export default function Home() {
   const qrLock = useRef(false);
