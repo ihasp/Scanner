@@ -53,7 +53,7 @@ export default function ScannedLayout({
   const [isSafe, setIsSafe] = useState(true);
 
   //debug
-  console.log("ScannedLayout received analysis:", analysis);
+  // console.log("ScannedLayout received analysis:", analysis);
 
   // Animacja otwarcia menu
   useEffect(() => {
