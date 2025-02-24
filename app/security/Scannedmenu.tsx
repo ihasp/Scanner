@@ -14,6 +14,9 @@ import {
 } from "react-native";
 import { Link, Stack } from "expo-router";
 import GlowOverlay from "./GlowOverlay";
+import AntDesign from "@expo/vector-icons/AntDesign";
+import { StatusBar } from "expo-status-bar";
+
 const { height, width } = Dimensions.get("window");
 
 interface Analysis {
@@ -83,53 +86,45 @@ export default function ScannedLayout({
     }, 500);
   };
 
-  //scroll na dół strony
+  //Scroll na dół strony
   const handleScrollToEnd = () => {
-    scrollViewRef.current?.scrollToEnd({ animated: true });
+    let ensureonEnd = scrollViewRef.current?.scrollToEnd({ animated: true });
+    if (ensureonEnd) {
+    }
   };
 
   //Style wyników
   const getResultText = (result: string) => {
     switch (result) {
+      case "malicious":
+        return { text: "Malicious", color: "#d72845", priority: 1 };
+      case "phishing":
+        return { text: "Phishing", color: "#ff8f00", priority: 2 };
+      case "suspicious":
+        return { text: "Suspicious", color: "#ffbe00", priority: 3 };
       case "clean":
-        return { text: "Brak zagrożenia", color: "green", priority: 4 };
+        return { text: "Safe", color: "#00d042", priority: 4 };
       case "unrated":
         return { text: "", color: "", priority: 5 };
-      case "malicious":
-        return { text: "Niebezpieczny link", color: "red", priority: 1 };
-      case "phishing":
-        return { text: "Phishing", color: "orange", priority: 2 };
-      case "suspicious":
-        return { text: "Podejrzany link", color: "yellow", priority: 3 };
       default:
         return { text: result, color: "black", priority: 6 };
     }
   };
 
+  //Jeżeli status od api !== completed, wykonuj interwał
   useEffect(() => {
-    //Jeżeli status od api !== completed, wykonuj interwał
     const interval = setInterval(async () => {
       if (analysis.data.attributes.status !== "completed") {
         await onRetry();
       } else {
         clearInterval(interval);
-        //Ekran ładowania
+        //Wyłącz ekran czekania na skan
         setShowActivityIndicator(false);
-        //Podświetlenie
-        const hasDangerousResults = sortedResults.some(
-          ({ text }) =>
-            text === "Niebezpieczny link" ||
-            text === "Phishing" ||
-            text === "Podejrzany link"
-        );
         setIsSafe(!hasDangerousResults);
         setShowGlow(true);
         setTimeout(() => setShowGlow(false), 2000);
       }
     }, 1000);
-
-
-    
 
     return () => clearInterval(interval);
   }, [onRetry, analysis.data.attributes.status]);
@@ -145,11 +140,10 @@ export default function ScannedLayout({
     .filter(({ text }) => text !== "")
     .sort((a, b) => a.priority - b.priority);
 
+  //dla tych wartości, link jest określony jako niebezpieczny
   const hasDangerousResults = sortedResults.some(
     ({ text }) =>
-      text === "Niebezpieczny link" ||
-      text === "Phishing" ||
-      text === "Podejrzany link"
+      text === "Malicious" || text === "Phishing" || text === "Suspicious"
   );
 
   return (
@@ -160,6 +154,7 @@ export default function ScannedLayout({
           headerShown: false,
         }}
       />
+      <StatusBar translucent />
       <GlowOverlay isSafe={isSafe} visible={showGlow} />
       <Animated.View
         style={[
@@ -177,16 +172,16 @@ export default function ScannedLayout({
           styles.menu,
         ]}
       >
-        <Text style={styles.titleMenuText}>Wynik skanu:</Text>
+        <Text style={styles.titleMenuText}>Scanned link:</Text>
         <Text style={styles.titleMenuTextScanned}>{data}</Text>
         <Pressable style={styles.scrollButtonStyle} onPress={handleScrollToEnd}>
-          <Text style={styles.ButtonText}>\/</Text>
+          <AntDesign name="caretdown" size={28} color="white" />
         </Pressable>
         {analysis.data.attributes.status === "queued" && (
           <View>
             {showActivityIndicator ? (
               <>
-                <Text style={styles.queuedText}>Skanowanie</Text>
+                <Text style={styles.queuedText}>Scanning the link...</Text>
                 <ActivityIndicator
                   size={"large"}
                   style={[
@@ -230,14 +225,14 @@ export default function ScannedLayout({
                   Linking.openURL(data);
                 }}
               >
-                <Text style={styles.ButtonText}>Przejdź do strony</Text>
+                <Text style={styles.ButtonText}>Enter site</Text>
               </Pressable>
               <Link href="/scanner" asChild>
                 <Pressable
                   style={styles.closeButtonStyle}
                   onPress={handleClose}
                 >
-                  <Text style={styles.ButtonText}>Skanuj ponownie</Text>
+                  <Text style={styles.ButtonText}>Scan again</Text>
                 </Pressable>
               </Link>
             </View>
@@ -253,8 +248,8 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 100,
     justifyContent: "flex-start",
-    borderTopLeftRadius: 15,
-    borderTopRightRadius: 15,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
     backgroundColor: "white",
     elevation: 5,
   },
@@ -273,22 +268,24 @@ const styles = StyleSheet.create({
     fontWeight: "normal",
     fontSize: 13,
     textDecorationLine: "underline",
-    marginBottom: 5,
+    marginBottom: 13,
+    marginRight: 10,
+    marginLeft: 10,
   },
   keyText: {
     fontSize: 13,
     fontWeight: "bold",
-    marginLeft: 32,
+    marginLeft: 35,
     color: "black",
     flexGrow: 1,
   },
   valueText: {
     fontSize: 13,
     fontWeight: "bold",
-    marginRight: 32,
+    marginRight: 35,
   },
   queuedText: {
-    fontSize: 45,
+    fontSize: 40,
     fontWeight: "bold",
     color: "#3675ff",
     alignSelf: "center",
@@ -307,6 +304,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#6ae66e",
   },
   ButtonText: {
+    fontFamily: "SpaceMono",
     fontSize: 16,
     lineHeight: 21,
     fontWeight: "bold",
@@ -332,7 +330,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 0,
     right: 0,
-    marginBottom: 25,
+    marginBottom: 30,
     marginRight: 10,
     zIndex: 300,
     height: 50,
@@ -341,6 +339,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     borderRadius: 100,
     backgroundColor: "black",
-    opacity: 0.6,
+    opacity: 0.585,
   },
 });

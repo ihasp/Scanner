@@ -13,6 +13,7 @@ import Overlay from "./Overlay";
 import ScannedLayout from "../security/Scannedmenu";
 import scanUrl from "../security/virustotalpost";
 import getAnalysis from "../security/virustotalget";
+import { SplashScreen } from "expo-router";
 
 export default function Home() {
   const qrLock = useRef(false);
@@ -22,6 +23,7 @@ export default function Home() {
   const [analysisData, setAnalysisData] = useState<string | any>(null);
   const [isRetrying, setIsRetrying] = useState(false);
 
+  SplashScreen.hide();
   useEffect(() => {
     const sub = AppState.addEventListener("change", (nextAppState) => {
       if (
@@ -36,8 +38,6 @@ export default function Home() {
       sub.remove();
     };
   }, []);
-
-
 
   const handleClose = () => {
     setShowScannedLayout(false);
@@ -56,7 +56,10 @@ export default function Home() {
         setAnalysisData(analysis);
         setShowScannedLayout(true);
       } catch (e) {
-        console.error("Error at scanning or getting analysis", e);
+        console.error(
+          "Error at getting scan results or analysis id (retrying)",
+          e
+        );
       } finally {
         setIsRetrying(false);
       }

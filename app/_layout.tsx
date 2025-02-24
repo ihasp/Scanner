@@ -19,9 +19,11 @@ export default function RootLayout() {
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
   });
 
+  SplashScreen.preventAutoHideAsync();
+  
   useEffect(() => {
     if (loaded) {
-      SplashScreen.hideAsync();
+      SplashScreen.hide();
     }
   }, [loaded]);
 
