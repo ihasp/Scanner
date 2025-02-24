@@ -11,6 +11,7 @@ import {
   ActivityIndicator,
   Linking,
   ScrollView,
+  Platform,
 } from "react-native";
 import { Link, Stack } from "expo-router";
 import GlowOverlay from "./GlowOverlay";
@@ -154,7 +155,7 @@ export default function ScannedLayout({
           headerShown: false,
         }}
       />
-      <StatusBar translucent />
+      {Platform.OS === "android" ? <StatusBar translucent /> : null}
       <GlowOverlay isSafe={isSafe} visible={showGlow} />
       <Animated.View
         style={[
