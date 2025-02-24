@@ -226,7 +226,16 @@ export default function ScannedLayout({
                   Linking.openURL(data);
                 }}
               >
-                <Text style={styles.ButtonText}>Enter site</Text>
+                <Text
+                  style={[
+                    styles.ButtonText,
+                    hasDangerousResults && {
+                      textDecorationLine: "line-through",
+                    },
+                  ]}
+                >
+                  Enter site
+                </Text>
               </Pressable>
               <Link href="/scanner" asChild>
                 <Pressable

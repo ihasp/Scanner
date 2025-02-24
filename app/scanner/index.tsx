@@ -10,9 +10,9 @@ import {
 import { Stack } from "expo-router";
 import { CameraView } from "expo-camera";
 import Overlay from "./Overlay";
-import ScannedLayout from "../security/Scannedmenu";
-import scanUrl from "../security/virustotalpost";
-import getAnalysis from "../security/virustotalget";
+import ScannedLayout from "../security";
+import scanUrl from "../security/vtPost";
+import getAnalysis from "../security/vtGet";
 import { SplashScreen } from "expo-router";
 
 export default function Home() {
@@ -40,10 +40,10 @@ export default function Home() {
   }, []);
 
   const handleClose = () => {
+    setIsRetrying(false);
     setShowScannedLayout(false);
     setScannedData(null);
     setAnalysisData(null);
-    setIsRetrying(false);
     qrLock.current = false;
   };
 
@@ -60,12 +60,10 @@ export default function Home() {
           "Error at getting scan results or analysis id (retrying)",
           e
         );
-      } finally {
-        setIsRetrying(false);
       }
+      setIsRetrying(false);
     }
   };
-  1;
   return (
     <SafeAreaView style={StyleSheet.absoluteFillObject}>
       <Stack.Screen options={{ title: "Overview", headerShown: false }} />
