@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useMemo } from "react";
-import {StyleSheet, Animated } from "react-native";
+import { StyleSheet, Animated } from "react-native";
 
 interface GlowOverlayProps {
   isSafe: boolean;
@@ -14,13 +14,14 @@ const GlowOverlay: React.FC<GlowOverlayProps> = ({
   const opacity = useRef(new Animated.Value(0)).current;
 
   const backgroundColor = useMemo(
-    () => (isSafe ? "rgba(0, 255, 0, 0.5)" : "rgba(255, 0, 0, 0.5)"),
+    () => (isSafe ? "rgba(0, 255, 0, 0.625)" : "rgba(255, 0, 0, 0.625)"),
     [isSafe]
   );
   const animatedStyle = useMemo(
     () => [styles.overlay, { backgroundColor, opacity }],
     [backgroundColor, opacity]
   );
+
   useEffect(() => {
     let animationSequence: Animated.CompositeAnimation;
     if (visible) {
@@ -45,8 +46,7 @@ const GlowOverlay: React.FC<GlowOverlayProps> = ({
   }, [visible, duration, opacity]);
 
   if (!visible) return null;
-
-  return <Animated.View style={animatedStyle} />;
+  return <Animated.View style={animatedStyle} pointerEvents={"none"} />;
 };
 
 const styles = StyleSheet.create({
